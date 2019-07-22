@@ -10,11 +10,13 @@ custom:
   stage: ${opt:stage, self:provider.stage}
   region: ${opt:region, self:provider.region}
   prefix: ${self:service}-${self:custom.stage}
+  queueName: ${self:custom.prefix}-pending
   signingPrivateKey: ${opt:signingPrivateKey}
   registrarContractAddress: ${opt:registrarContractAddress, ""}
 
 provider:
   name: aws
+  region: us-east-1
   runtime: nodejs10.x
   memorySize: 128
   logRetentionInDays: 7
@@ -38,8 +40,7 @@ resources:
     MessageQueue:
       Type: AWS::SQS::Queue
       Properties:
-        ContentBasedDeduplication: true
-        QueueName: ${prefix}-pending
+        QueueName: ${self:custom.queueName}
         # Wait 10 minutes to try any message a second time
         VisibilityTimeout: 600
 
