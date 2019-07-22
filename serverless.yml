@@ -41,6 +41,6 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:custom.queueName}
-        # Wait 10 minutes to try any message a second time
-        VisibilityTimeout: 600
+        # Wait 30 minutes to try any message a second time
+        VisibilityTimeout: 1800
 
