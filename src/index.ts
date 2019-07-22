@@ -51,7 +51,7 @@ export const handler: SQSHandler = async function (event) {
           } else {
             toRegister.push({
               address: queueMessage.address,
-              labelHash: utils.keccak256(queueMessage.ensName.split('.')[ 0 ]),
+              labelHash: utils.id(queueMessage.ensName.split('.')[ 0 ]),
               value: `0x${(await dollarsToWei(queueMessage.dollarsToSend)).toString(16)}`
             });
           }
@@ -82,12 +82,15 @@ export const handler: SQSHandler = async function (event) {
   // Construct and send a transaction to register the users
   console.log(REGISTRAR_CONTRACT_ADDRESS, toDelete, gasPrice, toRegister);
 
-  wallet.sign({
+  const signedTransaction = await wallet.sign({
     gasPrice: `0x${gasPrice.toString(16)}`,
     from: wallet.address,
+    to: REGISTRAR_CONTRACT_ADDRESS,
     value: 0,
     chainId: 1,
     nonce: await wallet.getTransactionCount('pending'),
     gasLimit: 0,
   });
+
+  console.log(signedTransaction);
 };
