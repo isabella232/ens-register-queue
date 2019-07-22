@@ -7,7 +7,7 @@ export interface QueueMessage {
 }
 
 export const QueueMessageValidator = jointz.object().keys({
-  ensName: jointz.string().pattern(/^[a-z0-9-]\.ethvault\.xyz$/),
+  ensName: jointz.string().pattern(/^[a-z0-9-]+\.ethvault\.xyz$/),
   address: jointz.string().pattern(/^0x[a-fA-F0-9]{40}$/),
   dollarsToSend: jointz.number().min(0).max(5)
 }).requiredKeys('ensName', 'address', 'dollarsToSend');
