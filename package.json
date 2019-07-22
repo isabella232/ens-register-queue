@@ -1,0 +1,42 @@
+{
+  "name": "@ethvault/ens-register-queue",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Queue that handles registering users to ENS",
+  "scripts": {
+    "test": "mocha test/**/*.test.ts",
+    "build": "sls package",
+    "deploy": "sls deploy"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethvault/ens-register-queue.git"
+  },
+  "dependencies": {
+    "bignumber.js": "^9.0.0",
+    "ethers": "^4.0.33",
+    "jointz": "0.0.7",
+    "lodash": "^4.17.15",
+    "node-fetch": "^2.6.0",
+    "reattempt": "^0.1.0",
+    "source-map-support": "^0.5.10"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.17",
+    "@types/chai": "^4.1.7",
+    "@types/jsonwebtoken": "^8.3.2",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^10.12.18",
+    "@types/node-fetch": "^2.3.7",
+    "aws-sdk": "^2.477.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "serverless": "^1.48.2",
+    "serverless-webpack": "^5.2.0",
+    "ts-loader": "^5.3.3",
+    "typescript": "^3.5.2",
+    "webpack": "^4.29.0"
+  },
+  "author": "Moody Salem <moody.salem@gmail.com>",
+  "license": "UNLICENSED"
+}

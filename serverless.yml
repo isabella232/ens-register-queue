@@ -1,0 +1,45 @@
+service:
+  name: ens-register-queue
+
+frameworkVersion: ">=1.45.1 <2.0.0"
+
+plugins:
+  - serverless-webpack
+
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  region: ${opt:region, self:provider.region}
+  prefix: ${self:service}-${self:custom.stage}
+  signingPrivateKey: ${opt:signingPrivateKey}
+  registrarContractAddress: ${opt:registrarContractAddress, ""}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  memorySize: 128
+  logRetentionInDays: 7
+
+  environment:
+    SIGNING_PRIVATE_KEY: ${self:custom.signingPrivateKey}
+    REGISTRAR_CONTRACT_ADDRESS: ${self:custom.registrarContractAddress}
+
+functions:
+  handleQueueMessages:
+    handler: src/index.handler
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - MessageQueue
+              - Arn
+
+resources:
+  Resources:
+    MessageQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        ContentBasedDeduplication: true
+        QueueName: ${prefix}-pending
+        # Wait 10 minutes to try any message a second time
+        VisibilityTimeout: 600
+
