@@ -44,3 +44,10 @@ resources:
         # Wait 30 minutes to try any message a second time
         VisibilityTimeout: 1800
 
+  Outputs:
+    ENSRegistrarQueue:
+      Description: The URL for the queue where messages should be sent to register ENS names
+      Value:
+        Ref: MessageQueue
+      Export:
+        Name: ${self:custom.prefix}:MessageQueue
