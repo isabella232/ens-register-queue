@@ -2,20 +2,26 @@ import BigNumber from 'bignumber.js';
 import fetch from 'node-fetch';
 
 let usdPricePromise: Promise<BigNumber> | null = null;
-let priceTimestamp: number | null;
+let priceTimestamp: Date | null;
+
+const ONE_MINUTE_MS: number = 1000 * 60;
+
+function isCacheStale(timestamp: Date, ttlMs: number = ONE_MINUTE_MS): boolean {
+  return timestamp.getTime() < (new Date()).getTime() - ttlMs;
+}
 
 /**
- * Get the price of ether in dollars. Safe to call multiple times.
+ * Get the price of ether in dollars. Safe to call multiple times. Caches the price for one minute.
  */
 function getEtherPriceInUSD(): Promise<BigNumber> {
   if (
     usdPricePromise !== null &&
-    (priceTimestamp === null || priceTimestamp > (new Date().getTime() - (1000 * 60)))
+    (priceTimestamp !== null && !isCacheStale(priceTimestamp))
   ) {
     return usdPricePromise;
   }
 
-  console.log('fetching price');
+  priceTimestamp = new Date();
 
   return usdPricePromise = fetch('https://api.coinmarketcap.com/v1/ticker/ethereum/')
     .then(response => {
@@ -33,12 +39,10 @@ function getEtherPriceInUSD(): Promise<BigNumber> {
         throw new Error('response did not have expected format: ' + JSON.stringify(json));
       }
 
-      priceTimestamp = new Date().getTime();
-
       return new BigNumber(json[ 0 ].price_usd);
     })
     .catch(error => {
-      console.error(error);
+      console.error('Failed to fetch price', error);
       usdPricePromise = null;
       priceTimestamp = null;
       throw error;

@@ -12,7 +12,6 @@ custom:
   prefix: ${self:service}-${self:custom.stage}
   queueName: ${self:custom.prefix}-pending
   signingPrivateKey: ${opt:signingPrivateKey}
-  registrarContractAddress: ${opt:registrarContractAddress, ""}
 
 provider:
   name: aws
@@ -23,7 +22,6 @@ provider:
 
   environment:
     SIGNING_PRIVATE_KEY: ${self:custom.signingPrivateKey}
-    REGISTRAR_CONTRACT_ADDRESS: ${self:custom.registrarContractAddress}
 
 functions:
   handleQueueMessages:
