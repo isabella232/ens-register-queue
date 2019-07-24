@@ -18,7 +18,7 @@ export function parseQueueMessage(message: string): QueueMessage {
   const errors = QueueMessageValidator.validate(parsed);
 
   if (errors.length > 0) {
-    throw new Error('failed validation: ' + JSON.stringify(errors));
+    throw new Error('Queue message failed validation: ' + JSON.stringify(errors));
   }
 
   return parsed;
