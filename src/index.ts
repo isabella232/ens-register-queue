@@ -15,7 +15,7 @@ const sqs = new SQS();
 interface Registration {
   // The hash of the label to assign to the address
   labelHash: string;
-  // Address to receive the registrarion
+  // Address to receive the registration
   address: string;
   // How much to send
   value: BigNumber;
