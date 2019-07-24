@@ -8,6 +8,7 @@ import { parseQueueMessage } from './message-type';
 import { getQueueUrl } from './queue-urls';
 import { ethereumProvider, getRegistrarContract } from './ethvault-ens-registrar-contract';
 import BigNumber from 'bignumber.js';
+import bn2hex from './bn2hex';
 
 const sqs = new SQS();
 
@@ -99,7 +100,7 @@ export const handler: SQSHandler = async function (event) {
 
     const labels = toRegister.map(({ labelHash }) => labelHash);
     const addresses = toRegister.map(({ address }) => address);
-    const values = toRegister.map(({ value }) => `0x${value.toString(16)}`);
+    const values = toRegister.map(({ value }) => bn2hex(value));
     const valueSum = reduce(values, (value, current) => {
       return value.plus(current);
     }, new BigNumber(0));
@@ -110,8 +111,8 @@ export const handler: SQSHandler = async function (event) {
         addresses,
         values,
         {
-          gasPrice: `0x${gasPrice.toString(16)}`,
-          value: `0x${valueSum.toString(16)}`,
+          gasPrice: bn2hex(gasPrice),
+          value: bn2hex(valueSum),
           chainId: 1
         }
       );
