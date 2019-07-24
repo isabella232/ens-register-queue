@@ -6,7 +6,7 @@ import { BigNumberish } from 'ethers/utils';
 const SIGNING_PRIVATE_KEY: string = process.env.SIGNING_PRIVATE_KEY || '';
 
 export const ethereumProvider = getDefaultProvider('mainnet');
-export const wallet = new Wallet(SIGNING_PRIVATE_KEY, ethereumProvider);
+const wallet = new Wallet(SIGNING_PRIVATE_KEY, ethereumProvider);
 
 interface TransactionOverrides {
   gasPrice: BigNumberish;
