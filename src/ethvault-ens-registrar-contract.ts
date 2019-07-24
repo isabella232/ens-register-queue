@@ -24,9 +24,6 @@ interface EthvaultENSRegistrarContract extends Contract {
   functions: EthvaultENSRegistrarContractFunctions;
 }
 
-// Fix to 1 when deployed to mainnet
-const CONTRACT_NETWORK_ID = '1';
-
 let registrarContract: EthvaultENSRegistrarContract | null = null;
 
 export function getRegistrarContract(): EthvaultENSRegistrarContract {
@@ -34,11 +31,9 @@ export function getRegistrarContract(): EthvaultENSRegistrarContract {
     return registrarContract;
   }
 
-  const address = EthvaultENSRegistrarArtifact.networks[ CONTRACT_NETWORK_ID ].address;
-
-  if (typeof address !== 'string') {
-    throw new Error(`Network information does not have address for network with ID ${CONTRACT_NETWORK_ID}`);
-  }
-
-  return registrarContract = new Contract(address, EthvaultENSRegistrarArtifact.abi, wallet) as EthvaultENSRegistrarContract;
+  return registrarContract = new Contract(
+    EthvaultENSRegistrarArtifact.networks[ '1' ].address,
+    EthvaultENSRegistrarArtifact.abi,
+    wallet
+  ) as EthvaultENSRegistrarContract;
 }
