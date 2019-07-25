@@ -8,7 +8,7 @@ import bn2hex from './bn2hex';
 import { dollarsToWei } from './dollars-to-wei';
 import { ethereumProvider, getRegistrarContract } from './ethvault-ens-registrar-contract';
 import { getSafeLowGasPriceWEI } from './get-safe-low-gas-price';
-import { parseQueueMessage } from './message-type';
+import { parseQueueMessage, QueueMessage } from './message-type';
 import { getQueueUrl } from './queue-urls';
 
 const sqs = new SQS();
@@ -41,10 +41,22 @@ export const handler: SQSHandler = async function (event) {
       async message => {
         const { body, eventSourceARN, messageId, receiptHandle } = message;
 
+        // First validate the message. In the case of an invalid message, we always delete it.
+        let queueMessage: QueueMessage;
         try {
-          const queueMessage = parseQueueMessage(body);
+          queueMessage = parseQueueMessage(body);
+        } catch (error) {
+          console.error('Invalid message received', message, error);
+          toDelete.push({
+            Id: messageId,
+            QueueUrl: await getQueueUrl(sqs, eventSourceARN),
+            ReceiptHandle: receiptHandle
+          });
+          return;
+        }
 
-          const address = await ethereumProvider.lookupAddress(queueMessage.ensName);
+        try {
+          const address = await ethereumProvider.resolveName(queueMessage.ensName);
 
           if (address !== null) {
             if (queueMessage.address.toLowerCase() !== address.toLowerCase()) {
@@ -52,13 +64,13 @@ export const handler: SQSHandler = async function (event) {
                 'Message received to register a subdomain that is already registered with a different address',
                 queueMessage
               );
-            } else {
-              toDelete.push({
-                Id: messageId,
-                ReceiptHandle: receiptHandle,
-                QueueUrl: await getQueueUrl(sqs, eventSourceARN)
-              });
             }
+
+            toDelete.push({
+              Id: messageId,
+              ReceiptHandle: receiptHandle,
+              QueueUrl: await getQueueUrl(sqs, eventSourceARN)
+            });
           } else {
             toRegister.push({
               address: queueMessage.address,
