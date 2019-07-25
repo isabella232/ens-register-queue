@@ -1,14 +1,15 @@
 import { SQSHandler } from 'aws-lambda';
 import * as SQS from 'aws-sdk/clients/sqs';
+import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
 import { groupBy, map, reduce } from 'lodash';
+import 'source-map-support/register';
+import bn2hex from './bn2hex';
 import { dollarsToWei } from './dollars-to-wei';
+import { ethereumProvider, getRegistrarContract } from './ethvault-ens-registrar-contract';
 import { getSafeLowGasPriceWEI } from './get-safe-low-gas-price';
 import { parseQueueMessage } from './message-type';
 import { getQueueUrl } from './queue-urls';
-import { ethereumProvider, getRegistrarContract } from './ethvault-ens-registrar-contract';
-import BigNumber from 'bignumber.js';
-import bn2hex from './bn2hex';
 
 const sqs = new SQS();
 
