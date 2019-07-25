@@ -43,9 +43,17 @@ resources:
         VisibilityTimeout: 1800
 
   Outputs:
-    ENSRegistrarQueue:
+    ENSRegistrarQueueUrl:
       Description: The URL for the queue where messages should be sent to register ENS names
       Value:
         Ref: MessageQueue
       Export:
-        Name: ${self:custom.prefix}:MessageQueue
+        Name: ENSRegistrarQueueUrl
+    ENSRegistrarQueueArn:
+      Description: The ARN for the queue where messages should be sent to register ENS names
+      Value:
+        'Fn::GetAtt':
+          - MessageQueue
+          - Arn
+      Export:
+        Name: ENSRegistrarQueueArn
