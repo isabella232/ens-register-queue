@@ -13,12 +13,17 @@ export const QueueMessageValidator = jointz.object().keys({
 }).requiredKeys('ensName', 'address', 'dollarsToSend');
 
 export function parseQueueMessage(message: string): QueueMessage {
-  const parsed = JSON.parse(message);
+  let parsed: any;
+  try {
+    parsed = JSON.parse(message);
+  } catch (error) {
+    throw new Error(`Invalid JSON: ${error.message}`);
+  }
 
   const errors = QueueMessageValidator.validate(parsed);
 
   if (errors.length > 0) {
-    throw new Error('Queue message failed validation: ' + JSON.stringify(errors));
+    throw new Error('Failed validation: ' + JSON.stringify(errors));
   }
 
   return parsed;

@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Queue that handles registering users to ENS",
   "scripts": {
-    "test": "mocha test/**/*.test.ts",
+    "test": "mocha --require ts-node/register src/**/*.test.ts",
     "build": "sls package",
     "deploy": "sls deploy"
   },
@@ -13,7 +13,7 @@
     "url": "https://github.com/ethvault/ens-register-queue.git"
   },
   "dependencies": {
-    "@ethvault/ens-registrar-contract": "^1.0.0",
+    "@ethvault/ens-registrar-contract": "^1.0.1",
     "bignumber.js": "^9.0.0",
     "ethers": "^4.0.33",
     "jointz": "0.0.7",
