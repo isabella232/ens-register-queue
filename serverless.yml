@@ -18,6 +18,7 @@ provider:
   region: us-east-1
   runtime: nodejs10.x
   memorySize: 128
+  timeout: 20
   logRetentionInDays: 7
 
   environment:
