@@ -19,7 +19,6 @@
     "jointz": "0.0.7",
     "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
-    "reattempt": "^0.1.0",
     "source-map-support": "^0.5.10"
   },
   "devDependencies": {
