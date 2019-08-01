@@ -12,6 +12,7 @@ custom:
   prefix: ${self:service}-${self:custom.stage}
   queueName: ${self:custom.prefix}-pending
   signingPrivateKey: ${opt:signingPrivateKey}
+  registrationDisabled: ${opt:registrationDisabled, "false"}
 
 provider:
   name: aws
@@ -23,6 +24,7 @@ provider:
 
   environment:
     SIGNING_PRIVATE_KEY: ${self:custom.signingPrivateKey}
+    REGISTRATION_DISABLED: ${self:custom.registrationDisabled}
 
 functions:
   handleQueueMessages:

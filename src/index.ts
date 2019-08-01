@@ -1,4 +1,4 @@
-import { SQSHandler } from 'aws-lambda';
+import { SQSEvent, SQSHandler } from 'aws-lambda';
 import * as SQS from 'aws-sdk/clients/sqs';
 import BigNumber from 'bignumber.js';
 import { utils } from 'ethers';
@@ -31,7 +31,35 @@ interface DeleteMessageInfo {
   ReceiptHandle: string;
 }
 
-export const handler: SQSHandler = async function (event) {
+async function deleteAllMessages(toDelete: DeleteMessageInfo[]): Promise<void> {
+  if (toDelete.length === 0) {
+    return;
+  }
+
+  // Group the deletions by the url and send them
+  const grouped = groupBy(toDelete, 'QueueUrl');
+
+  try {
+    await Promise.all(
+      map(
+        grouped,
+        async (messages, url) =>
+          sqs.deleteMessageBatch({
+            QueueUrl: url,
+            Entries: messages.map(({ Id, ReceiptHandle }) => ({ ReceiptHandle, Id }))
+          })
+      )
+    );
+  } catch (error) {
+    console.error('Failed to delete messages from the queue', error, toDelete);
+  }
+}
+
+/**
+ * Parse the messages
+ * @param event
+ */
+async function parseMessages(event: SQSEvent): Promise<{ toDelete: DeleteMessageInfo[]; toRegister: Registration[]; }> {
   const toDelete: DeleteMessageInfo[] = [];
   const toRegister: Registration[] = [];
 
@@ -85,56 +113,74 @@ export const handler: SQSHandler = async function (event) {
     )
   );
 
-  // Delete any messages from the queue that have already succeeded.
-  if (toDelete.length > 0) {
-    // Group the deletions by the url and send them
-    const grouped = groupBy(toDelete, 'QueueUrl');
+  return {
+    toDelete,
+    toRegister
+  };
+}
 
-    try {
-      await Promise.all(
-        map(
-          grouped,
-          async (messages, url) =>
-            sqs.deleteMessageBatch({
-              QueueUrl: url,
-              Entries: messages.map(({ Id, ReceiptHandle }) => ({ ReceiptHandle, Id }))
-            })
-        )
-      );
-    } catch (error) {
-      console.error('Failed to delete messages from the queue', error, toDelete);
-    }
+/**
+ * Send the transaction to register the listed registrations
+ * @param toRegister accounts to register
+ */
+async function sendRegistrationTransaction(toRegister: Registration[]): Promise<void> {
+  if (toRegister.length === 0) {
+    return;
   }
 
-  if (toRegister.length > 0) {
-    const gasPrice = await getSafeLowGasPriceWEI();
+  const gasPrice = await getSafeLowGasPriceWEI();
 
-    const contract = getRegistrarContract();
+  const contract = getRegistrarContract();
 
-    const labels = toRegister.map(({ labelHash }) => labelHash);
-    const addresses = toRegister.map(({ address }) => address);
-    const values = toRegister.map(({ value }) => bn2hex(value));
-    const valueSum = reduce(values, (value, current) => {
-      return value.plus(current);
-    }, new BigNumber(0));
+  const labels = toRegister.map(({ labelHash }) => labelHash);
+  const addresses = toRegister.map(({ address }) => address);
+  const values = toRegister.map(({ value }) => bn2hex(value));
+  const valueSum = reduce(values, (value, current) => {
+    return value.plus(current);
+  }, new BigNumber(0));
 
-    try {
-      const txHash = await contract.functions.register(
-        labels,
-        addresses,
-        values,
-        {
-          gasPrice: bn2hex(gasPrice),
-          value: bn2hex(valueSum),
-          chainId: 1
-        }
-      );
+  try {
+    const txHash = await contract.functions.register(
+      labels,
+      addresses,
+      values,
+      {
+        gasPrice: bn2hex(gasPrice),
+        value: bn2hex(valueSum),
+        chainId: 1
+      }
+    );
 
-      console.log('Submitted transaction', txHash);
-    } catch (error) {
-      console.error('Failed to send transaction', error);
-    }
-  } else {
-    console.log('No new registrations. Exiting without submitting transaction.');
+    console.log('Submitted transaction', txHash);
+  } catch (error) {
+    console.error('Failed to send registration transaction', error);
+    throw error;
+  }
+}
+
+const isRegistrationDisabled: boolean = process.env.REGISTRATION_DISABLED === 'true';
+
+export const handler: SQSHandler = async function (event) {
+  const { toDelete, toRegister } = await parseMessages(event);
+
+  // Delete any messages from the queue that have already succeeded.
+  try {
+    await deleteAllMessages(toDelete);
+  } catch (error) {
+    console.error('Encountered error while deleting messages', error);
+    throw error;
+  }
+
+  // We can turn it off temporarily for migrations
+  if (isRegistrationDisabled) {
+    return;
+  }
+
+  // Delete any messages from the queue that have already succeeded.
+  try {
+    await sendRegistrationTransaction(toRegister);
+  } catch (error) {
+    console.error('Encountered error while sending registration transaction', error);
+    throw error;
   }
 };
