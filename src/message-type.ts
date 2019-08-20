@@ -1,10 +1,6 @@
-import jointz from 'jointz';
+import jointz, { ExtractResultType } from 'jointz';
 
-export interface QueueMessage {
-  readonly ensName: string;
-  readonly address: string;
-  readonly dollarsToSend: number;
-}
+export type QueueMessage = ExtractResultType<typeof QueueMessageValidator>;
 
 export const QueueMessageValidator = jointz.object({
   ensName: jointz.string().pattern(/^[a-z0-9-]+\.myethvault\.com$/),
@@ -20,11 +16,5 @@ export function parseQueueMessage(message: string): QueueMessage {
     throw new Error(`Invalid JSON: ${error.message}`);
   }
 
-  const errors = QueueMessageValidator.validate(parsed);
-
-  if (errors.length > 0) {
-    throw new Error('Failed validation: ' + JSON.stringify(errors));
-  }
-
-  return parsed;
+  return QueueMessageValidator.checkValid(parsed);
 }
