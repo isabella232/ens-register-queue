@@ -31,6 +31,10 @@ interface DeleteMessageInfo {
   ReceiptHandle: string;
 }
 
+/**
+ * Delete all the messages from the given queues
+ * @param toDelete messages to delete
+ */
 async function deleteAllMessages(toDelete: DeleteMessageInfo[]): Promise<void> {
   if (toDelete.length === 0) {
     return;
@@ -160,6 +164,10 @@ async function sendRegistrationTransaction(toRegister: Registration[]): Promise<
 
 const isRegistrationDisabled: boolean = process.env.REGISTRATION_DISABLED === 'true';
 
+/**
+ * Handles the SQS events
+ * @param event pushed from SQS
+ */
 export const handler: SQSHandler = async function (event) {
   const { toDelete, toRegister } = await parseMessages(event);
 

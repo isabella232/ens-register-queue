@@ -15,7 +15,8 @@ interface TransactionOverrides {
 }
 
 interface EthvaultENSRegistrarContractFunctions {
-  register(labelHashes: string[], addresses: string[], weiValues: BigNumberish[], overrides: TransactionOverrides): Promise<void>;
+  register(rootNode: string, labelHashes: string[], addresses: string[], weiValues: BigNumberish[], overrides: TransactionOverrides): Promise<void>;
+  release(rootNode: string, labelHash: string, expirationTimestamp: BigNumberish, bytes: string): Promise<void>;
 
   [ name: string ]: ContractFunction;
 }
@@ -30,6 +31,8 @@ export function getRegistrarContract(): EthvaultENSRegistrarContract {
   if (registrarContract !== null) {
     return registrarContract;
   }
+
+  console.log('Constructing contract with wallet address', wallet.address);
 
   return registrarContract = new Contract(
     EthvaultENSRegistrarArtifact.networks[ '1' ].address,
