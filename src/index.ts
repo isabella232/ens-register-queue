@@ -14,6 +14,8 @@ import { getQueueUrl } from './queue-urls';
 const sqs = new SQS();
 
 interface Registration {
+  // The root node where the registration should apply.
+  rootNode: string;
   // The hash of the label to assign to the address
   labelHash: string;
   // Address to receive the registration
@@ -105,6 +107,8 @@ async function parseMessages(event: SQSEvent): Promise<{ toDelete: DeleteMessage
             });
           } else {
             toRegister.push({
+              // TODO: check this computation is correct (it's not)
+              rootNode: utils.id(queueMessage.ensName.split('.').slice(1).join('.')),
               address: queueMessage.address,
               labelHash: utils.id(queueMessage.ensName.split('.')[ 0 ]),
               value: await dollarsToWei(queueMessage.dollarsToSend)
@@ -145,6 +149,8 @@ async function sendRegistrationTransaction(toRegister: Registration[]): Promise<
 
   try {
     const txHash = await contract.functions.register(
+      // TODO: we need to use a different root node for each registration
+      toRegister[ 0 ].rootNode,
       labels,
       addresses,
       values,
